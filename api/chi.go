@@ -27,6 +27,7 @@ func Handler(a API) http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/", a.Insert)
+		r.Get("/", a.All)
 		r.Get("/{id}", a.ById)
 		r.Put("/{id}", a.Update)
 		r.Delete("/{id}", a.Delete)
@@ -128,6 +129,23 @@ func (a API) Delete(w http.ResponseWriter, r *http.Request) {
 
 	writeResp(w, http.StatusOK, nil)
 }
+
+func (a API) All(w http.ResponseWriter, r *http.Request) {
+	resp, err := a.Service.Db.All(context.Background())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeResp(w, http.StatusOK, respBytes)
+}
+
 
 func writeResp(w http.ResponseWriter, status int, data []byte) {
 	if data == nil {

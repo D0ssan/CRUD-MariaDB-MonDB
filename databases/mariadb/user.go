@@ -2,8 +2,10 @@ package mariadb
 
 import (
 	"context"
+	"database/sql"
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/model"
 	"github.com/pkg/errors"
+	"os"
 )
 
 const (
@@ -11,6 +13,7 @@ const (
 	SelectQuery = `SELECT * FROM users users WHERE id = ?`
 	UpdateQuery = `UPDATE users SET first_name=?, last_name=?, specialization=?, dob=? WHERE id= ?`
 	DeleteQuery = `DELETE FROM users WHERE id = ?`
+	AllQuery    = `SELECT * FROM users`
 )
 
 func (m MariaDB) Insert(ctx context.Context, u *model.User) error {
@@ -73,4 +76,34 @@ func (m MariaDB) Delete(ctx context.Context, id int) error {
 		return errors.Wrap(errors.New("given id does not exist"), "error deleting a row")
 	}
 	return nil
+}
+
+func (m MariaDB) All(ctx context.Context) ([]model.User, error) {
+	query := m.db.Rebind(AllQuery)
+	var u model.User
+	var users []model.User
+
+	rows, err := m.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not make query")
+	}
+
+	defer func(rows *sql.Rows) {
+		if err := rows.Close(); err != nil {
+			os.Exit(1)
+		}
+	}(rows)
+
+	for rows.Next() {
+		err = rows.Scan(&u.ID, &u.FirstName, &u.LastName, &u.Specialization, &u.DOB)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not scan rows")
+		}
+		users = append(users, u)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "rows error")
+	}
+	return users, nil
 }
