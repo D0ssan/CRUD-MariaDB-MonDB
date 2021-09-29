@@ -49,7 +49,13 @@ func (a API) ById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeResp(w, http.StatusOK, resp)
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeResp(w, http.StatusOK, respBytes)
 }
 
 // Insert parses a request data then sends it to the database.
@@ -65,7 +71,14 @@ func (a API) Insert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeResp(w, http.StatusCreated, u)
+	uBytes, err := json.Marshal(u)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeResp(w, http.StatusCreated, uBytes)
+
 }
 
 // Update replaces the existing data to the requested one
@@ -91,7 +104,13 @@ func (a API) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeResp(w, http.StatusOK, resp)
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeResp(w, http.StatusOK, respBytes)
 }
 
 // Delete removes a row from a database
@@ -107,14 +126,19 @@ func (a API) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK) // use writeResp too
+	writeResp(w, http.StatusOK, nil)
 }
 
-// io.Reader io.Writer
-func writeResp(w http.ResponseWriter, status int, data interface{}) {
-	w.Header().Add("Content-Type", "application/json")
+func writeResp(w http.ResponseWriter, status int, data []byte) {
+	if data == nil {
+		w.WriteHeader(status)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
+	if _, err := w.Write(data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
