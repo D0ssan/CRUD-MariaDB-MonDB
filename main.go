@@ -7,25 +7,31 @@ import (
 
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/api"
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
-	mariadb "github.com/d0ssan/CRUD-MariaDB-MongoDB/databases/mariadb"
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/databases/mariadb"
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/service"
-	"github.com/kelseyhightower/envconfig"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/golang-migrate/migrate/source/file"
 )
 
 func main() {
-
-	mariaDb, err := mariadb.Connect()
+	cfg, err := configs.EnvParser()
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	srv := service.New(mariaDb)
+	mariaDB, err := mariadb.Connect(cfg.MariaDB)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	if err = mariaDB.Up(); err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	srv := service.New(mariaDB)
 	handler := api.New(srv)
 
-	addrCfg := new(configs.Server)
-	if err := envconfig.Process("myserver", addrCfg); err != nil {
-		log.Fatal(err.Error())
-	}
-	addr := fmt.Sprintf("%v:%v", addrCfg.Host, addrCfg.Port)
+	addr := fmt.Sprintf("%v:%v", cfg.Server.Host, cfg.Server.Port)
 	log.Fatal(http.ListenAndServe(addr, handler))
 }
