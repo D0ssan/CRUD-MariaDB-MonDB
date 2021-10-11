@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// COVERAGE AT LEAST 80%. WRITE a MAKEFILE
+// WRITE a MAKEFILE
 
 func TestOne(t *testing.T) {
 	db, err := mariadb.Connect(dbConf)

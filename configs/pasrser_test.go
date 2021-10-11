@@ -81,9 +81,9 @@ func TestEnvParser(t *testing.T) { // nolint:gocyclo
 
 	for i, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			configs, err := configs.EnvParser()
+			cfg, err := configs.EnvParser()
 			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, configs)
+			assert.Equal(t, tc.expected, cfg)
 		})
 		switch i {
 		case 0:

@@ -14,6 +14,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+const timeout = 15
+
 type API struct {
 	Service service.Service
 }
@@ -25,7 +27,7 @@ func New(srv service.Service) http.Handler {
 func Handler(a API) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Use(middleware.Timeout(15 * time.Second))
+	r.Use(middleware.Timeout(timeout * time.Second))
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/", a.Insert)
 		r.Get("/", a.All)

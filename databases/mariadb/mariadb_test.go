@@ -60,6 +60,7 @@ func TestConnect(t *testing.T) {
 		Password:      os.Getenv("MYMARIADB_PASSWORD"),
 		PathToMigrate: "file://",
 	}
+
 	tt := []struct {
 		name string
 		cfg  configs.MariaDB
