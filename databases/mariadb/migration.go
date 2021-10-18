@@ -18,7 +18,7 @@ func migrationInit(db *sql.DB, path, cfgDriver string) (*migration, error) {
 		return nil, errors.Wrap(err, "error getting the driver")
 	}
 
-	instanceDB, err := migrate.NewWithDatabaseInstance(path, cfgDriver, driver)
+	instanceDB, err := migrate.NewWithDatabaseInstance("file://" + path, cfgDriver, driver)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting the database migration")
 	}

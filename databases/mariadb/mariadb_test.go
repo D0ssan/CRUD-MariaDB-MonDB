@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var dbConf = configs.MariaDB{ // nolint:gochecknoglobals
+var ConfDB = configs.MariaDB{ // nolint:gochecknoglobals
 	Driver:        "mysql",
 	Username:      "root",
 	Name:          "test_users",
 	Host:          "localhost",
 	Port:          "3306",
 	Password:      os.Getenv("MYMARIADB_PASSWORD"),
-	PathToMigrate: "file://migration",
+	PathToMigrate: "migration",
 }
 
 func TestConnect(t *testing.T) {
@@ -58,7 +58,7 @@ func TestConnect(t *testing.T) {
 		Host:          "localhost",
 		Port:          "3306",
 		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "file://",
+		PathToMigrate: "",
 	}
 
 	tt := []struct {
@@ -66,7 +66,7 @@ func TestConnect(t *testing.T) {
 		cfg  configs.MariaDB
 		err  string
 	}{
-		{"Success connection", dbConf, ""},
+		{"Success connection", ConfDB, ""},
 		{"Failed connection: wrong dns", wrongDNS, "could not connect to the database"},
 		{"Failed connection: wrong driver", wrongDriver, "could not create migration migration"},
 		{"Failed connection: wrong path to migrate", wrongPathToMigrate, "error creating db migration"},

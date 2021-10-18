@@ -11,10 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// WRITE a MAKEFILE
-
 func TestOne(t *testing.T) {
-	db, err := mariadb.Connect(dbConf)
+	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
 
@@ -63,7 +61,7 @@ func TestOne(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	db, err := mariadb.Connect(dbConf)
+	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
 	err = db.Up()
@@ -145,7 +143,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	db, err := mariadb.Connect(dbConf)
+	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
 	err = db.Up()
@@ -190,7 +188,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	db, err := mariadb.Connect(dbConf)
+	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
 
@@ -236,7 +234,7 @@ func TestAll(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	db, err := mariadb.Connect(dbConf)
+	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
 

@@ -9,3 +9,4 @@ mariadb:
   host: localhost
   port: 3306
   password: secret
+  pathtomigrate: databases/mariadb/migration
