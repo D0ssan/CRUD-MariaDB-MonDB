@@ -15,7 +15,6 @@ func TestOne(t *testing.T) {
 	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
-
 	err = db.Up()
 	require.NoError(t, err)
 

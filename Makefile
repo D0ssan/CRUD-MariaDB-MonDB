@@ -1,9 +1,14 @@
-# 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.42.1
+# Parameters
+GOTOBIN=$(shell go env GOPATH)/bin
 
 .PHONY: lint
 lint:
+	/bin/sh -c "if [ ! -f $(GOTOBIN)/golangci-lint ]; then \
+ 			curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOTOBIN) v1.42.1; \
+    	fi"
+
 	golangci-lint run
 
 .PHONY: test
 test:
-	MYMARIADB_PASSWORD=secret go test -v ./...
+	go test -v ./...

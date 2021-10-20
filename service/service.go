@@ -14,10 +14,6 @@ type Controller interface {
 	All(ctx context.Context) ([]model.User, error)
 }
 
-type Service struct {
+type Conn struct {
 	DB Controller
-}
-
-func New(controller Controller) Service {
-	return Service{DB: controller}
 }
