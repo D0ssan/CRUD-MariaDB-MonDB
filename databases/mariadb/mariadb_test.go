@@ -1,7 +1,6 @@
 package mariadb_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
@@ -17,7 +16,7 @@ var ConfDB = configs.MariaDB{ // nolint:gochecknoglobals
 	Name:          "test_users",
 	Host:          "localhost",
 	Port:          "3306",
-	Password:      os.Getenv("MYMARIADB_PASSWORD"),
+	Password:      "secret",
 	PathToMigrate: "migration",
 }
 
@@ -27,8 +26,8 @@ func TestConnect(t *testing.T) {
 		Username:      "root",
 		Name:          "test_users",
 		Host:          "localhost",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "file://migration",
+		Password:      "secret",
+		PathToMigrate: "migration",
 	}
 
 	wrongDriver := configs.MariaDB{
@@ -37,8 +36,8 @@ func TestConnect(t *testing.T) {
 		Name:          "test_users",
 		Host:          "localhost",
 		Port:          "3306",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "file://databases/mariadb/migrations",
+		Password:      "secret",
+		PathToMigrate: "databases/mariadb/migrations",
 	}
 
 	wrongPathToMigrate := configs.MariaDB{
@@ -47,8 +46,8 @@ func TestConnect(t *testing.T) {
 		Name:          "test_users",
 		Host:          "localhost",
 		Port:          "3306",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "file://WRONG_PATH",
+		Password:      "secret",
+		PathToMigrate: "WRONG_PATH",
 	}
 
 	wrongMigrateUp := configs.MariaDB{
@@ -57,7 +56,7 @@ func TestConnect(t *testing.T) {
 		Name:          "test_users",
 		Host:          "localhost",
 		Port:          "3306",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
+		Password:      "secret",
 		PathToMigrate: "",
 	}
 
