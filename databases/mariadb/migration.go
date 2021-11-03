@@ -24,23 +24,28 @@ func migrationInit(db *sql.DB, path, cfgDriver string) (*migration, error) {
 	}
 
 	m := migration{instance: instanceDB}
+
 	return &m, nil
 }
 
+// Up creates the table according to a .up.sql file.
 func (m MariaDB) Up() error {
-	err := m.migrate.instance.Up()
-	if err != nil {
-		if err == migrate.ErrNoChange {
+	if err := m.migrate.instance.Up(); err != nil {
+		if errors.Is(err, migrate.ErrNoChange) {
 			return nil
 		}
+
 		return errors.Wrap(err, "could not migrate up")
 	}
+
 	return nil
 }
 
+// Down drops the table according to a .up.sql file.
 func (m MariaDB) Down() error {
 	if err := m.migrate.instance.Down(); err != nil {
 		return errors.Wrap(err, "could not migrate down")
 	}
+
 	return nil
 }

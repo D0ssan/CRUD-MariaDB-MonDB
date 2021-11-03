@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/golang-migrate/migrate/source/file"
+
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/api"
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/databases/mariadb"
 	"github.com/d0ssan/CRUD-MariaDB-MongoDB/service"
-
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/golang-migrate/migrate/source/file"
 )
 
 func main() {

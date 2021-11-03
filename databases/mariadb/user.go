@@ -3,11 +3,12 @@ package mariadb
 import (
 	"context"
 	"database/sql"
+	"log"
 	"os"
 
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/model"
-
 	"github.com/pkg/errors"
+
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/model"
 )
 
 const (
@@ -18,6 +19,15 @@ const (
 	allUserQuery    = `SELECT * FROM users`
 )
 
+var (
+	// ErrNoChange indicates no changes in the db during insert, delete or update operations.
+	ErrNoChange = errors.New("no change")
+
+	// ErrNoID  indicates that the db does not have such id.
+	ErrNoID = errors.New("id does not exist")
+)
+
+// Insert save a data into the db and modifies the input model.User ID by writing it from the db.
 func (m MariaDB) Insert(ctx context.Context, u *model.User) error {
 	query := insertUserQuery
 
@@ -25,6 +35,15 @@ func (m MariaDB) Insert(ctx context.Context, u *model.User) error {
 	res, err := m.db.ExecContext(ctx, query, u.FirstName, u.LastName, u.Specialization, u.DOB)
 	if err != nil {
 		return errors.Wrap(err, "error executing the insert query into user table")
+	}
+
+	var n int64
+	if n, err = res.RowsAffected(); n == 0 {
+		if err != nil {
+			return errors.Wrap(err, "error reading res.RowsAffected() method")
+		}
+
+		return errors.Wrap(ErrNoChange, "error inserting data")
 	}
 
 	id, err := res.LastInsertId()
@@ -37,6 +56,7 @@ func (m MariaDB) Insert(ctx context.Context, u *model.User) error {
 	return nil
 }
 
+// User return model.User based on id from the db.
 func (m MariaDB) User(ctx context.Context, id int) (model.User, error) {
 	query := userQuery
 	row := m.db.QueryRowContext(ctx, query, id)
@@ -50,30 +70,29 @@ func (m MariaDB) User(ctx context.Context, id int) (model.User, error) {
 	return u, nil
 }
 
-func (m MariaDB) Update(ctx context.Context, u model.User) (model.User, error) {
+// Update changes a row taken from input model.User based on its id.
+// If there is not any changes, the function returns with error ErrNoChange.
+func (m MariaDB) Update(ctx context.Context, u model.User) error {
 	query := updUserQuery
 
 	res, err := m.db.ExecContext(ctx, query, u.FirstName, u.LastName, u.Specialization, u.DOB, u.ID)
 	if err != nil {
-		return model.User{}, errors.Wrap(err, "error updating data in user table")
+		return errors.Wrap(err, "error updating data in user table")
 	}
 
-	if n, err := res.RowsAffected(); n == 0 {
+	var n int64
+	if n, err = res.RowsAffected(); n == 0 {
 		if err != nil {
-			return model.User{}, errors.Wrap(err, "error reading res.RowsAffected() method")
+			return errors.Wrap(err, "error reading res.RowsAffected() method")
 		}
 
-		return model.User{}, errors.Wrap(errors.New("nothing changed"), "error updating a row")
+		return errors.Wrap(ErrNoChange, "error updating a row")
 	}
 
-	resp, err := m.User(ctx, int(u.ID))
-	if err != nil {
-		return model.User{}, errors.Wrap(err, "error parsing data right after its update")
-	}
-
-	return resp, err
+	return err
 }
 
+// Delete remove a row from the db based on id. If there is no such id, the function return error ErrNoID.
 func (m MariaDB) Delete(ctx context.Context, id int) error {
 	query := rmvUserQuery
 
@@ -82,17 +101,19 @@ func (m MariaDB) Delete(ctx context.Context, id int) error {
 		return errors.Wrap(err, "could not remove data")
 	}
 
-	if n, err := res.RowsAffected(); n == 0 {
+	var n int64
+	if n, err = res.RowsAffected(); n == 0 {
 		if err != nil {
 			return errors.Wrap(err, "error reading res.RowsAffected() method")
 		}
 
-		return errors.Wrap(errors.New("given id does not exist"), "error deleting a row")
+		return errors.Wrap(ErrNoID, "error deleting a row")
 	}
 
 	return nil
 }
 
+// All returns all rows in slice of model.User.
 func (m MariaDB) All(ctx context.Context) ([]model.User, error) {
 	query := allUserQuery
 
@@ -102,7 +123,8 @@ func (m MariaDB) All(ctx context.Context) ([]model.User, error) {
 	}
 
 	defer func(rows *sql.Rows) {
-		if err := rows.Close(); err != nil {
+		if err = rows.Close(); err != nil {
+			log.Println(err)
 			os.Exit(1)
 		}
 	}(rows)
@@ -113,8 +135,7 @@ func (m MariaDB) All(ctx context.Context) ([]model.User, error) {
 	)
 
 	for rows.Next() {
-		err = rows.Scan(&u.ID, &u.FirstName, &u.LastName, &u.Specialization, &u.DOB)
-		if err != nil {
+		if err = rows.Scan(&u.ID, &u.FirstName, &u.LastName, &u.Specialization, &u.DOB); err != nil {
 			return nil, errors.Wrap(err, "could not scan rows")
 		}
 
