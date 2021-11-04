@@ -4,13 +4,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
 )
 
-func TestEnvParser(t *testing.T) { // nolint:gocyclo
+// TestEnvParser test EnvParser() func.
+func TestEnvParser(t *testing.T) {
 	tt := []struct {
 		name     string
 		expected configs.Config
@@ -85,37 +86,36 @@ func TestEnvParser(t *testing.T) { // nolint:gocyclo
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, cfg)
 		})
+
 		switch i {
 		case 0:
-			if err := os.Setenv("MYMARIADB_DRIVER", "mysql"); err != nil {
-				require.NoError(t, err)
-			}
-			if err := os.Setenv("MYMARIADB_USERNAME", "root"); err != nil {
-				require.NoError(t, err)
-			}
-			if err := os.Setenv("MYMARIADB_NAME", "test_users"); err != nil {
-				require.NoError(t, err)
-			}
-			if err := os.Setenv("MYMARIADB_HOST", "localhost"); err != nil {
-				require.NoError(t, err)
-			}
-			if err := os.Setenv("MYMARIADB_PORT", "3306"); err != nil {
-				require.NoError(t, err)
-			}
-			if err := os.Setenv("MYMARIADB_PATHTOMIGRATE", "file://"); err != nil {
-				require.NoError(t, err)
-			}
+			err := os.Setenv("MYMARIADB_DRIVER", "mysql")
+			require.NoError(t, err)
+
+			err = os.Setenv("MYMARIADB_USERNAME", "root")
+			require.NoError(t, err)
+
+			err = os.Setenv("MYMARIADB_NAME", "test_users")
+			require.NoError(t, err)
+
+			err = os.Setenv("MYMARIADB_HOST", "localhost")
+			require.NoError(t, err)
+
+			err = os.Setenv("MYMARIADB_PORT", "3306")
+			require.NoError(t, err)
+
+			err = os.Setenv("MYMARIADB_PATHTOMIGRATE", "file://")
+			require.NoError(t, err)
+
 		case 1:
-			if err := os.Setenv("MYMARIADB_ANYTHING", "anything"); err != nil {
-				require.NoError(t, err)
-			}
+			err := os.Setenv("MYMARIADB_ANYTHING", "anything")
+			require.NoError(t, err)
 		case 2:
-			if err := os.Setenv("MYSERVER_HOST", "localhost"); err != nil {
-				require.NoError(t, err)
-			}
-			if err := os.Setenv("MYSERVER_PORT", "8080"); err != nil {
-				require.NoError(t, err)
-			}
+			err := os.Setenv("MYSERVER_HOST", "localhost")
+			require.NoError(t, err)
+
+			err = os.Setenv("MYSERVER_PORT", "8080")
+			require.NoError(t, err)
 		}
 	}
 }

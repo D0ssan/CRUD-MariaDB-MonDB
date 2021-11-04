@@ -1,76 +1,85 @@
 package mariadb_test
 
 import (
-	"os"
 	"testing"
-
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/databases/mariadb"
 
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/databases/mariadb"
 )
 
-var ConfDB = configs.MariaDB{ // nolint:gochecknoglobals
-	Driver:        "mysql",
-	Username:      "root",
-	Name:          "test_users",
-	Host:          "localhost",
-	Port:          "3306",
-	Password:      os.Getenv("MYMARIADB_PASSWORD"),
-	PathToMigrate: "migration",
-}
-
 func TestConnect(t *testing.T) {
-	wrongDNS := configs.MariaDB{
-		Driver:        "mysql",
-		Username:      "root",
-		Name:          "test_users",
-		Host:          "localhost",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "file://migration",
-	}
-
-	wrongDriver := configs.MariaDB{
-		Driver:        "postgres",
-		Username:      "root",
-		Name:          "test_users",
-		Host:          "localhost",
-		Port:          "3306",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "file://databases/mariadb/migrations",
-	}
-
-	wrongPathToMigrate := configs.MariaDB{
-		Driver:        "mysql",
-		Username:      "root",
-		Name:          "test_users",
-		Host:          "localhost",
-		Port:          "3306",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "file://WRONG_PATH",
-	}
-
-	wrongMigrateUp := configs.MariaDB{
-		Driver:        "mysql",
-		Username:      "root",
-		Name:          "test_users",
-		Host:          "localhost",
-		Port:          "3306",
-		Password:      os.Getenv("MYMARIADB_PASSWORD"),
-		PathToMigrate: "",
-	}
-
 	tt := []struct {
 		name string
 		cfg  configs.MariaDB
 		err  string
 	}{
-		{"Success connection", ConfDB, ""},
-		{"Failed connection: wrong dns", wrongDNS, "could not connect to the database"},
-		{"Failed connection: wrong driver", wrongDriver, "could not create migration migration"},
-		{"Failed connection: wrong path to migrate", wrongPathToMigrate, "error creating db migration"},
-		{"Failed connection: cannot migrate up and down", wrongMigrateUp, "cannot manipulate migration"},
+		{
+			"Success connection",
+			configs.MariaDB{
+				Driver:        "mysql",
+				Username:      "root",
+				Name:          "test_users",
+				Host:          "localhost",
+				Port:          "3306",
+				Password:      "secret",
+				PathToMigrate: "migration",
+			},
+			"",
+		},
+		{
+			"Failed connection: wrong dns",
+			configs.MariaDB{
+				Driver:        "mysql",
+				Username:      "root",
+				Name:          "test_users",
+				Host:          "localhost",
+				Password:      "secret",
+				PathToMigrate: "migration",
+			},
+			"could not connect to the database",
+		},
+		{
+			"Failed connection: wrong driver",
+			configs.MariaDB{
+				Driver:        "postgres",
+				Username:      "root",
+				Name:          "test_users",
+				Host:          "localhost",
+				Port:          "3306",
+				Password:      "secret",
+				PathToMigrate: "databases/mariadb/migrations",
+			},
+			"could not create migration migration",
+		},
+		{
+			"Failed connection: wrong path to migrate",
+			configs.MariaDB{
+				Driver:        "mysql",
+				Username:      "root",
+				Name:          "test_users",
+				Host:          "localhost",
+				Port:          "3306",
+				Password:      "secret",
+				PathToMigrate: "WRONG_PATH",
+			},
+			"error creating db migration",
+		},
+		{
+			"Failed connection: cannot migrate up and down",
+			configs.MariaDB{
+				Driver:        "mysql",
+				Username:      "root",
+				Name:          "test_users",
+				Host:          "localhost",
+				Port:          "3306",
+				Password:      "secret",
+				PathToMigrate: "",
+			},
+			"cannot manipulate migration",
+		},
 	}
 
 	for _, tc := range tt {

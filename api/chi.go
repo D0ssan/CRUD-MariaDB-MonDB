@@ -7,24 +7,22 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/model"
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/service"
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/model"
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/service"
 )
 
 const timeout = 15
 
-type API struct {
-	Service service.Service
+// Router is the connection to service.Conn.
+type Router struct {
+	Service service.Conn
 }
 
-func New(srv service.Service) http.Handler {
-	return Handler(API{Service: srv})
-}
-
-func Handler(a API) http.Handler {
+// Handlers creates a router and collect all handle function.
+func Handlers(a Router) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Timeout(timeout * time.Second))
@@ -41,7 +39,7 @@ func Handler(a API) http.Handler {
 
 // ByID gets a user info addressing to the database
 // and responses with the requested data AND row id.
-func (a API) ByID(w http.ResponseWriter, r *http.Request) {
+func (a Router) ByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -63,9 +61,9 @@ func (a API) ByID(w http.ResponseWriter, r *http.Request) {
 	writeResp(w, http.StatusOK, respBytes)
 }
 
-// Insert parses a request data then sends it to the database.
+// Insert parses a request body then sends it to the database.
 // and responses with the stored data with row's id.
-func (a API) Insert(w http.ResponseWriter, r *http.Request) {
+func (a Router) Insert(w http.ResponseWriter, r *http.Request) {
 	var u model.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -86,9 +84,8 @@ func (a API) Insert(w http.ResponseWriter, r *http.Request) {
 	writeResp(w, http.StatusCreated, uBytes)
 }
 
-// Update replaces the existing data to the requested one
-// and responses with the new data.
-func (a API) Update(w http.ResponseWriter, r *http.Request) {
+// Update replaces the existing data to the requested one and responses with the new data.
+func (a Router) Update(w http.ResponseWriter, r *http.Request) {
 	var u model.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -103,30 +100,8 @@ func (a API) Update(w http.ResponseWriter, r *http.Request) {
 
 	u.ID = int64(id)
 
-	resp, err := a.Service.DB.Update(context.Background(), u)
+	err = a.Service.DB.Update(context.Background(), u)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	respBytes, err := json.Marshal(resp)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	writeResp(w, http.StatusOK, respBytes)
-}
-
-// Delete removes a row from a database.
-func (a API) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := a.Service.DB.Delete(context.Background(), id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -134,7 +109,25 @@ func (a API) Delete(w http.ResponseWriter, r *http.Request) {
 	writeResp(w, http.StatusOK, nil)
 }
 
-func (a API) All(w http.ResponseWriter, _ *http.Request) {
+// Delete removes a row from a database. This method handle id from the url parameter "users/{id}".
+func (a Router) Delete(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err = a.Service.DB.Delete(context.Background(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeResp(w, http.StatusOK, nil)
+}
+
+// All parse all rows from the database and shows them to the user with StatusOk.
+// Otherwise, there will error messages from the db and StatusInternalServerError.
+func (a Router) All(w http.ResponseWriter, _ *http.Request) {
 	resp, err := a.Service.DB.All(context.Background())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

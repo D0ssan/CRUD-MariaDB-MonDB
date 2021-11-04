@@ -1,10 +1,13 @@
 linters-settings:
+  depguard:
+    list-type: blacklist
+    packages:
+      - github.com/sirupsen/logrus
   dupl:
-    # tokens count to trigger issue, 150 by default
     threshold: 100
   funlen:
     lines: 300
-    statements: 50
+    statements: 60
   goconst:
     min-len: 2
     min-occurrences: 2
@@ -12,46 +15,88 @@ linters-settings:
     enabled-tags:
       - diagnostic
       - performance
+      - style
     disabled-checks:
       - hugeParam
       - rangeValCopy
-  gocyclo:
-    min-complexity: 10
+  cyclop:
+    max-complexity: 10
   goimports:
-    local-prefixes: github.com/golangci/golangci-lint
-  golint:
-    min-confidence: 0
+    local-prefixes: github.com/d0ssan/CRUD-MariaDB-MongoDB
   gosec:
     settings:
       exclude:
         - "G102"
   govet:
-    check-shadowing: false
+    enable:
+      - fieldalignment
+      - shadow
+    settings:
+      printf: # analyzer name, run `go tool vet help` to see all analyzers
+        funcs: # run `go tool vet help printf` to see available settings for `printf` analyzer
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+  lll:
+    line-length: 155
   misspell:
     locale: US
+  nlreturn:
+    block-size: 3
 linters:
+  disable-all: true
   enable:
-    - bodyclose         # checks whether HTTP response body is closed successfully -
+    - bodyclose         # checks whether HTTP response body is closed successfully
+    - cyclop            # checks function and package cyclomatic complexity [fast:false, auto-fix: false]
     - deadcode          # Finds unused code
     - depguard          # Go linter that checks if package imports are in a list of acceptable packages
     - dogsled           # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f())
     - dupl              # Tool for code clone detection
+    - durationcheck     # check for two durations multiplied together [fast: false, auto-fix: false]
     - errcheck          # Errcheck is a program for checking for unchecked errors in go programs
+    - errname           # Checks that sentinel errors are prefixed with the `Err` and error types are suffixed with the `Error`. [fast: false, auto-fix: false]
+    - errorlint         # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13. [fast: false, auto-fix: false]
+    - exportloopref     #
     - funlen            # Tool for detection of long functions
+    - gci               # Gci control golang package import order and make it always deterministic. [fast: true, auto-fix: true]
     - gochecknoglobals  # Checks that no globals are present in Go code
     - gochecknoinits    # Checks that no init functions are present in Go code
+    - gocognit          # Computes and checks the cognitive complexity of functions [fast: true, auto-fix: false]
     - goconst           # Finds repeated strings that could be replaced by a constant
     - gocritic          # The most opinionated Go source code linter
     - gocyclo           # Computes and checks the cyclomatic complexity of functions
-    - gofmt             # Gofmt checks whether code was gofmt-ed. By default, this tool runs with -s option to check for code simplification
-    - goimports         # Goimports does everything that gofmt does. Additionally, it checks unused imports
+    - godot             # Check if comments end in a period [fast: true, auto-fix: true]
+    - godox             # Tool for detection of FIXME, TODO and other comment keywords
+    - goerr113          # Golang linter to check the errors handling expressions [fast: false, auto-fix: false]
+    - gofmt             # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
+    - gofumpt           # Gofumpt checks whether code was gofumpt-ed. [fast: true, auto-fix: true]
+    - goheader          # Checks is file header matches to pattern [fast: true, auto-fix: false]
+    - goimports         # Goimports does everything that gofmt does. Additionally it checks unused imports
+    - gomnd             # An analyzer to detect magic numbers. [fast:true, auto-fix: false]
+    - gomoddirectives   # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod. [fast: true, auto-fix: false]
+    - gomodguard        # Allow and block list linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations. [fast:true, auto-fix: false]
+    - goprintffuncname  # Checks that printf-like functions are named with `f` at the end [fast: true, auto-fix: false]
     - gosec             # (gas): Inspects source code for security problems
     - gosimple          # Linter for Go source code that specializes in simplifying a code
     - govet             # (vet, vetshadow): Vet examines Go source code and reports suspicious constructs
+    - ifshort           # Checks that your code uses short syntax for if-statements whenever possible
+    - importas          # Enforces consistent import aliases
     - ineffassign       # Detects when assignments to existing variables are not used
+    - lll               # Reports long lines [fast: true, auto-fix: false]
+    - makezero          # Finds slice declarations with non-zero initial length [fast: false, auto-fix: false]
     - misspell          # Finds commonly misspelled English words in comments
     - nakedret          # Finds naked returns in functions greater than a specified function length
+    - nestif            # Reports deeply nested if statements [fast: true, auto-fix: false]
+    - nilerr            # Finds the code that returns nil even if it checks that the error is not nil.
+    - noctx             # noctx finds sending http request without context.Context
+    - nolintlint        # Reports ill-formed or insufficient nolint directives
+#    - paralleltest      # paralleltest	paralleltest detects missing usage of t.Parallel() method in your Go test
     - prealloc          # Finds slice declarations that could potentially be preallocated
+    - predeclared       # find code that shadows one of Go's predeclared identifiers
+    - promlinter        # Check Prometheus metrics naming via promlint
+    - revive            # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [fast: false, auto-fix: false]
+    - rowserrcheck      # checks whether Err of rows is checked successfully
     - staticcheck       # Staticcheck is a go vet on steroids, applying a ton of static analysis checks
     - structcheck       # Finds unused struct fields
     - stylecheck        # Stylecheck is a replacement for golint
@@ -60,7 +105,9 @@ linters:
     - unparam           # Reports unused function parameters
     - unused            # Checks Go code for unused constants, variables, functions and types
     - varcheck          # Finds unused global variables and constants [fast: true, auto-fix: false]
+    - wastedassign      # wastedassign finds wasted assignment statements.
     - whitespace        # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
+    - wsl	            # Whitespace Linter - Forces you to use empty lines!
 run:
   skip-dirs:
     - test/testdata_etc
@@ -79,21 +126,17 @@ issues:
         - errcheck
     - text: (should have a package comment)
       linters:
-        - golint
+        - revive
     - linters:
-        - lll
-        - golint
+        - revive
       source: "^//go:generate "
     # Exclude some linters from running on tests files.
     - path: _test\.go
       linters:
         - funlen
 
-
-
   exclude:
-    - '^ST1000'
-    - "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
+    - "^ST1000"
 service:
   golangci-lint-version: 1.42.1
   prepare:

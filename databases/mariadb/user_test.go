@@ -4,14 +4,24 @@ import (
 	"context"
 	"testing"
 
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/databases/mariadb"
-	"github.com/d0ssan/CRUD-MariaDB-MongoDB/model"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/configs"
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/databases/mariadb"
+	"github.com/d0ssan/CRUD-MariaDB-MongoDB/model"
 )
 
 func TestOne(t *testing.T) {
+	ConfDB := configs.MariaDB{
+		Driver:        "mysql",
+		Username:      "root",
+		Name:          "test_users",
+		Host:          "localhost",
+		Port:          "3306",
+		Password:      "secret",
+		PathToMigrate: "migration",
+	}
 	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -32,13 +42,13 @@ func TestOne(t *testing.T) {
 
 	tt := []struct {
 		name     string
-		id       int
-		expected model.User
 		err      string
+		expected model.User
+		id       int
 	}{
-		{"Success a user parsing ", 1, user, ""},
-		{"Failed a user parsing: no id in the db", 2, model.User{}, "no such row"},
-		{"Failure a user parsing: the db is dropped", 1, model.User{}, "error db is dropped"},
+		{"Success a user parsing ", "", user, 1},
+		{"Failed a user parsing: no id in the db", "no such row", model.User{}, 2},
+		{"Failure a user parsing: the db is dropped", "error db is dropped", model.User{}, 1},
 	}
 
 	for i, tc := range tt {
@@ -61,9 +71,19 @@ func TestOne(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
+	ConfDB := configs.MariaDB{
+		Driver:        "mysql",
+		Username:      "root",
+		Name:          "test_users",
+		Host:          "localhost",
+		Port:          "3306",
+		Password:      "secret",
+		PathToMigrate: "migration",
+	}
 	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
+
 	err = db.Up()
 	require.NoError(t, err)
 
@@ -88,36 +108,36 @@ func TestUpdate(t *testing.T) {
 
 	tt := []struct {
 		name     string
+		err      string
 		toUpdate model.User
 		expected model.User
-		err      string
 	}{
 		{
 			"Failure a user update: exact same values",
+			"error no changes",
 			user,
 			model.User{},
-			"error no changes",
 		},
 		{
 			"Success a user update",
-			toUpdate,
-			toUpdate,
 			"",
+			toUpdate,
+			toUpdate,
 		},
 		{
 			"Failure a user update: no such id",
+			"error no this id in the db",
 			model.User{
 				ID:        3,
 				FirstName: "UpdatedTestFirstName",
 			},
 			model.User{},
-			"error no this id in the db",
 		},
 		{
 			"Failure a user update: no such id",
+			"error do is dropped",
 			toUpdate,
 			model.User{},
-			"error do is dropped",
 		},
 	}
 
@@ -128,24 +148,34 @@ func TestUpdate(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			update, err := db.Update(context.Background(), tc.toUpdate)
+			err = db.Update(context.Background(), tc.toUpdate)
 			if tc.err != "" {
 				assert.Error(t, err)
-				assert.Equal(t, tc.expected, update)
-
 				return
 			}
 
 			assert.NoError(t, err)
+			update, err := db.User(context.Background(), int(tc.toUpdate.ID))
+			require.NoError(t, err)
 			assert.Equal(t, tc.expected, update)
 		})
 	}
 }
 
 func TestDelete(t *testing.T) {
+	ConfDB := configs.MariaDB{
+		Driver:        "mysql",
+		Username:      "root",
+		Name:          "test_users",
+		Host:          "localhost",
+		Port:          "3306",
+		Password:      "secret",
+		PathToMigrate: "migration",
+	}
 	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
+
 	err = db.Up()
 	require.NoError(t, err)
 
@@ -162,12 +192,12 @@ func TestDelete(t *testing.T) {
 
 	tt := []struct {
 		name string
-		id   int
 		err  string
+		id   int
 	}{
-		{"Failure a user delete: no such row", 4, "error no this id in the db"},
-		{"Success a user delete", 1, ""},
-		{"Failure a user delete: db is dropped", 1, "error db is dropped"},
+		{"Failure a user delete: no such row", "error no this id in the db", 4},
+		{"Success a user delete", "", 1},
+		{"Failure a user delete: db is dropped", "error db is dropped", 1},
 	}
 
 	for i, tc := range tt {
@@ -188,6 +218,15 @@ func TestDelete(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
+	ConfDB := configs.MariaDB{
+		Driver:        "mysql",
+		Username:      "root",
+		Name:          "test_users",
+		Host:          "localhost",
+		Port:          "3306",
+		Password:      "secret",
+		PathToMigrate: "migration",
+	}
 	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -208,11 +247,11 @@ func TestAll(t *testing.T) {
 
 	tt := []struct {
 		name     string
-		expected []model.User
 		err      string
+		expected []model.User
 	}{
-		{"Success parsing all data", []model.User{user}, ""},
-		{"Failure parsing all data: the db is dropped", nil, "error the db is dropped"},
+		{"Success parsing all data", "", []model.User{user}},
+		{"Failure parsing all data: the db is dropped", "error the db is dropped", nil},
 	}
 
 	for i, tc := range tt {
@@ -234,6 +273,15 @@ func TestAll(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
+	ConfDB := configs.MariaDB{
+		Driver:        "mysql",
+		Username:      "root",
+		Name:          "test_users",
+		Host:          "localhost",
+		Port:          "3306",
+		Password:      "secret",
+		PathToMigrate: "migration",
+	}
 	db, err := mariadb.Connect(ConfDB)
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -251,11 +299,11 @@ func TestInsert(t *testing.T) {
 
 	tt := []struct {
 		name string
-		user model.User
 		err  string
+		user model.User
 	}{
-		{"Success parsing all data", user, ""},
-		{"Failure parsing all data: the db is dropped", user, "error the db is dropped"},
+		{"Success parsing all data", "", user},
+		{"Failure parsing all data: the db is dropped", "error the db is dropped", user},
 	}
 
 	for i, tc := range tt {
