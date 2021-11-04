@@ -30,7 +30,7 @@ func TestConnect(t *testing.T) {
 			"",
 		},
 		{
-			"Failed connection: wrong dns",
+			"Failed connection: wrong dsn",
 			configs.MariaDB{
 				Driver:        "mysql",
 				Username:      "root",
@@ -50,7 +50,7 @@ func TestConnect(t *testing.T) {
 				Host:          "localhost",
 				Port:          "3306",
 				Password:      "secret",
-				PathToMigrate: "databases/mariadb/migrations",
+				PathToMigrate: "migrations",
 			},
 			"could not create migration migration",
 		},

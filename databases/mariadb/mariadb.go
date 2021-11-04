@@ -27,8 +27,8 @@ func Connect(cfg configs.MariaDB) (*MariaDB, error) {
 	}
 
 	if err = db.Ping(); err != nil {
-		if err = db.Close(); err != nil {
-			return nil, errors.Wrap(err, "error closing the database")
+		if db.Close() != nil {
+			return nil, errors.Wrap(errors.New("cannot close the mariaDB"), "error closing the database")
 		}
 
 		return nil, errors.Wrap(err, "error ping to the mariadb")

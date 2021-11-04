@@ -3,4 +3,12 @@ language: go
 go:
   - "1.16"
   - master
-
+dist: trusty
+services:
+  - mariadb
+  - docker
+script:
+  - golangci-lint run
+  - go test -covermode=count -coverprofile=coverage.out ./...
+after_success:
+  - goveralls -service=travis-ci -coverprofile=coverage.out
