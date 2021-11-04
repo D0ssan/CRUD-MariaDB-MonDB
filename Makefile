@@ -15,3 +15,15 @@ test:
 .PHONY: docker
 docker:
 	docker start my-mariadb
+
+.PHONY: mariadb
+mariadb:
+#!/bin/bash
+	#!/bin/bash
+	sudo mysql -e "CREATE DATABASE IF NOT EXISTS test_users;" -u root
+	export PATH=$PATH:$HOME/GOPATH/bin
+
+	set -ex
+
+	migrate -path databases/mariadb/migration -database "mysql://root:ppasword@tcp(localhost:3306)/test_users" up
+

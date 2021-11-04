@@ -7,8 +7,11 @@ dist: trusty
 services:
   - mariadb
   - docker
+before_script:
+  - make mariadb
+  - go install github.com/mattn/goveralls
 script:
-  - golangci-lint run
+  - make lint
   - go test -covermode=count -coverprofile=coverage.out ./...
 after_success:
   - goveralls -service=travis-ci -coverprofile=coverage.out
