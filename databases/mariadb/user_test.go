@@ -149,15 +149,14 @@ func TestUpdate(t *testing.T) {
 			}
 
 			err = db.Update(context.Background(), tc.toUpdate)
-			update, _ := db.User(context.Background(), int(tc.toUpdate.ID))
 			if tc.err != "" {
 				assert.Error(t, err)
-				assert.Equal(t, tc.expected, update)
-
 				return
 			}
 
 			assert.NoError(t, err)
+			update, err := db.User(context.Background(), int(tc.toUpdate.ID))
+			require.NoError(t, err)
 			assert.Equal(t, tc.expected, update)
 		})
 	}
