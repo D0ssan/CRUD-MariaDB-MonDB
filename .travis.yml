@@ -2,18 +2,31 @@ language: go
 
 go:
   - "1.17"
+
 dist: trusty
+
+# Skip the install step. Don't `go get` dependencies. Only build with the code
+# in vendor/
+install: true
+
+# Don't email me the results of the test runs.
+notifications:
+  email: false
+
 services:
   - mariadb
   - docker
+
 before_script:
   - go get -v github.com/rubenv/sql-migrate/...
   - make mariadb
   - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |
     sh -s -- -b $(go env GOPATH)/bin v1.42.1;
   - go install github.com/mattn/goveralls
+
 script:
   - golangci-lint run
   - go test -covermode=count -coverprofile=coverage.out ./...
+
 after_success:
   - goveralls -service=travis-ci -coverprofile=coverage.out
