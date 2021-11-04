@@ -8,6 +8,8 @@ notifications:
 services:
   - mariadb
   - docker
+before_install:
+  - go mod tidy
 install:
   - github.com/mattn/goveralls
 before_script:
