@@ -9,11 +9,11 @@ services:
   - mariadb
   - docker
 install:
-  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |
-    sh -s -- -b $(go env GOPATH)/bin v1.42.1;
-  - go install github.com/mattn/goveralls
-  - go get -v github.com/rubenv/sql-migrate/...
+  - github.com/mattn/goveralls
 before_script:
+  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |
+  sh -s -- -b $(go env GOPATH)/bin v1.42.1;
+  - go get -v github.com/rubenv/sql-migrate/...
   - make mariadb
 script:
   - golangci-lint run
